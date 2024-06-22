@@ -1,5 +1,5 @@
 export enum Color {
-	"lightCoral",
-	"electricBlue",
-	"lavender",
+	lightCoral = "lightCoral",
+	electricBlue = "electricBlue",
+	lavender = "lavender",
 }

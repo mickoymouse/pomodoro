@@ -22,14 +22,24 @@ const config: Config = {
 					"0%": { transform: "translateX(-100%)" },
 					"100%": { transform: "translateX(0)" },
 				},
+				slideInFromLeft2x: {
+					"0%": { transform: "translateX(-200%)" },
+					"100%": { transform: "translateX(0)" },
+				},
 				slideInFromRight: {
 					"0%": { transform: "translateX(100%)" },
+					"100%": { transform: "translateX(0)" },
+				},
+				slideInFromRight2x: {
+					"0%": { transform: "translateX(200%)" },
 					"100%": { transform: "translateX(0)" },
 				},
 			},
 			animation: {
 				slideInFromLeft: "slideInFromLeft 0.5s forwards",
 				slideInFromRight: "slideInFromRight 0.5s forwards",
+				slideInFromLeft2x: "slideInFromLeft2x 0.5s forwards",
+				slideInFromRight2x: "slideInFromRight2x 0.5s forwards",
 			},
 		},
 	},

@@ -22,6 +22,17 @@ const useTimer = (dashArray: number, duration: number) => {
 		clearInterval(interval);
 	}, [duration]);
 
+	const resetTimer = () => {
+		setIsRunning(false);
+		setTimerState(TimerState.PAUSED);
+		setTimer(duration * 60);
+		setInitialTimer(duration * 60);
+		setProgress(0);
+		setDashOffset(0);
+		setIsVisible(false);
+		clearInterval(interval);
+	};
+
 	useEffect(() => {
 		if (!isRunning) {
 			return;
@@ -60,6 +71,7 @@ const useTimer = (dashArray: number, duration: number) => {
 		setIsRunning,
 		setTimerState,
 		setTimer,
+		resetTimer,
 	};
 };
 

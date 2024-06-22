@@ -2,7 +2,7 @@
 
 import { Kumbh_Sans, Roboto_Slab, Space_Mono } from "next/font/google";
 import Image from "next/image";
-import { useState } from "react";
+import { memo, useEffect, useState } from "react";
 
 import { TimerState } from "@/enum/timer";
 import useTimer from "@/hooks/timer";
@@ -29,6 +29,10 @@ interface SettingsModalProps {
 	setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
 	settings: Settings;
 	setSettings: React.Dispatch<React.SetStateAction<Settings>>;
+	resetPomodoroTimer: () => void;
+	resetShortBreakTimer: () => void;
+	resetLongBreakTimer: () => void;
+	color: string;
 }
 
 export default function Home() {
@@ -44,15 +48,28 @@ export default function Home() {
 			return;
 		}
 
-		if (prevTab < tab) setAnimate("animate-slideInFromLeft");
-		else setAnimate("animate-slideInFromRight");
+		if (prevTab < tab) {
+			if (tab - prevTab == 2) setAnimate("animate-slideInFromLeft2x");
+			else setAnimate("animate-slideInFromLeft");
+		} else {
+			if (prevTab - tab == 2) setAnimate("animate-slideInFromRight2x");
+			else setAnimate("animate-slideInFromRight");
+		}
 
 		setTab(tab);
 		setPrevTab(tab);
 	};
 
+	const [settings, setSettings] = useState<Settings>({
+		pomodoro: 15,
+		shortBreak: 3,
+		longBreak: 5,
+		font: Font.sans,
+		color: Color.lightCoral,
+	});
+
 	// Pomodoro Timer
-	const [pomodoroDuration, setPomodoroDuration] = useState(25);
+	const [pomodoroDuration, setPomodoroDuration] = useState(settings.pomodoro);
 	const {
 		timer: pomodoroTimer,
 		isVisible: pomodoroIsVisible,
@@ -62,10 +79,13 @@ export default function Home() {
 		setIsRunning: setPomodoroIsRunning,
 		setTimerState: setPomodoroState,
 		setTimer: setPomodoroTimer,
+		resetTimer: resetPomodoroTimer,
 	} = useTimer(dashArray, pomodoroDuration);
 
 	// short break timer
-	const [shortBreakDuration, setShortBreakDuration] = useState(5);
+	const [shortBreakDuration, setShortBreakDuration] = useState(
+		settings.shortBreak
+	);
 	const {
 		timer: shortBreakTimer,
 		isVisible: shortBreakIsVisible,
@@ -75,10 +95,13 @@ export default function Home() {
 		setIsRunning: setShortBreakIsRunning,
 		setTimerState: setShortBreakState,
 		setTimer: setShortBreakTimer,
+		resetTimer: resetShortBreakTimer,
 	} = useTimer(dashArray, shortBreakDuration);
 
 	// long break timer
-	const [longBreakDuration, setLongBreakDuration] = useState(15);
+	const [longBreakDuration, setLongBreakDuration] = useState(
+		settings.longBreak
+	);
 	const {
 		timer: longBreakTimer,
 		isVisible: longBreakIsVisible,
@@ -88,7 +111,20 @@ export default function Home() {
 		setIsRunning: setLongBreakIsRunning,
 		setTimerState: setLongBreakState,
 		setTimer: setLongBreakTimer,
+		resetTimer: resetLongBreakTimer,
 	} = useTimer(dashArray, longBreakDuration);
+
+	// colors
+	const [color, setColor] = useState(settings.color);
+
+	useEffect(() => {
+		setPomodoroDuration(settings.pomodoro);
+		setShortBreakDuration(settings.shortBreak);
+		setLongBreakDuration(settings.longBreak);
+		setColor(settings.color);
+	}, [settings]);
+
+	const [settingsIsOpen, setSettingsIsOpen] = useState(false);
 
 	const formatTime = (time: number) => {
 		const minutes = Math.floor(time / 60);
@@ -168,18 +204,17 @@ export default function Home() {
 		}
 	};
 
-	const [settingsIsOpen, setSettingsIsOpen] = useState(false);
-
-	const [settinngs, setSettings] = useState<Settings>({
-		pomodoro: 15,
-		shortBreak: 3,
-		longBreak: 5,
-		font: Font.sans,
-		color: Color.lightCoral,
-	});
-
 	return (
-		<main className="flex min-h-screen flex-col items-center justify-center bg-spaceCadet">
+		<main
+			className={cn(
+				"flex min-h-screen flex-col items-center justify-center bg-spaceCadet",
+				{
+					[sans.className]: settings.font === Font.sans,
+					[slab.className]: settings.font === Font.slab,
+					[mono.className]: settings.font === Font.mono,
+				}
+			)}
+		>
 			<div className="container w-full flex flex-col gap-20 items-center">
 				<div className="w-full flex items-center justify-center">
 					<Image src="logo.svg" width={157} height={40} alt="pomodoro logo" />
@@ -202,7 +237,7 @@ export default function Home() {
 								className={cn(
 									"h-full w-full absolute top-0 left-0 z-0 rounded-full",
 									{
-										"bg-lightCoral": tab === 0,
+										["bg-" + color]: tab === 0,
 										[animate]: tab === 0,
 									}
 								)}
@@ -224,7 +259,7 @@ export default function Home() {
 								className={cn(
 									"h-full w-full absolute top-0 left-0 z-0 rounded-full",
 									{
-										"bg-lightCoral": tab === 1,
+										["bg-" + color]: tab === 1,
 										[animate]: tab === 1,
 									}
 								)}
@@ -246,7 +281,7 @@ export default function Home() {
 								className={cn(
 									"h-full w-full absolute top-0 left-0 z-0 rounded-full",
 									{
-										"bg-lightCoral": tab === 2,
+										["bg-" + color]: tab === 2,
 										[animate]: tab === 2,
 									}
 								)}
@@ -268,6 +303,7 @@ export default function Home() {
 						radius={radius}
 						dashArray={dashArray}
 						dashOffset={pomodoroDashOffset}
+						color={color}
 					/>
 				</div>
 				<div
@@ -284,6 +320,7 @@ export default function Home() {
 						radius={radius}
 						dashArray={dashArray}
 						dashOffset={shortBreakDashOffset}
+						color={color}
 					/>
 				</div>
 				<div
@@ -300,12 +337,19 @@ export default function Home() {
 						radius={radius}
 						dashArray={dashArray}
 						dashOffset={longBreakDashOffset}
+						color={color}
 					/>
 				</div>
 				<div
 					className="flex items-center justify-center cursor-pointer"
 					onClick={() => {
 						setSettingsIsOpen(true);
+						if (pomodoroState === TimerState.RUNNING)
+							managePomodoroTimer(TimerState.RUNNING);
+						if (shortBreakState === TimerState.RUNNING)
+							manageShortBreakTimer(TimerState.RUNNING);
+						if (longBreakState === TimerState.RUNNING)
+							manageLongBreakTimer(TimerState.RUNNING);
 					}}
 				>
 					<SettingsIcon />
@@ -314,91 +358,16 @@ export default function Home() {
 			<SettingsModal
 				isOpen={settingsIsOpen}
 				setIsOpen={setSettingsIsOpen}
-				settings={settinngs}
+				settings={settings}
 				setSettings={setSettings}
+				resetPomodoroTimer={resetPomodoroTimer}
+				resetShortBreakTimer={resetShortBreakTimer}
+				resetLongBreakTimer={resetLongBreakTimer}
+				color={color}
 			/>
 		</main>
 	);
 }
-
-const TimerTab = ({
-	manageTimer,
-	formatTime,
-	timer,
-	timerState,
-	isVisible,
-	radius,
-	dashArray,
-	dashOffset,
-}: {
-	manageTimer: (timerState: TimerState) => void;
-	formatTime: (time: number) => string;
-	timer: number;
-	timerState: TimerState;
-	isVisible: boolean;
-	radius: number;
-	dashArray: number;
-	dashOffset: number;
-}) => {
-	return (
-		<div
-			className="flex items-center justify-center w-full h-full cursor-pointer"
-			onClick={() => manageTimer(timerState)}
-		>
-			<div
-				className="flex items-center justify-center relative aspect-square w-[300px] md:w-[410px] rounded-full bg-gradient-to-tl from-[#2e325a] to-[#0e112a]"
-				style={{
-					boxShadow:
-						"-50px -50px 100px 0px #272C5A, 50px 50px 100px 0px #121530",
-				}}
-			>
-				<div className="aspect-square w-full bg-gunmetal rounded-full m-4 ">
-					<div className="absolute inset-0 flex items-center justify-center">
-						<svg
-							width={410}
-							height={410}
-							viewBox="0 0 410 410"
-							className={cn({
-								"opacity-0": !isVisible,
-								"opacity-100": isVisible,
-							})}
-						>
-							<circle
-								cx={410 / 2}
-								cy={410 / 2}
-								strokeWidth="10px"
-								r={radius}
-								className="cb stroke-gunmetal"
-							/>
-							<circle
-								cx={410 / 2}
-								cy={410 / 2}
-								strokeWidth="10px"
-								r={radius}
-								className="cp stroke-lightCoral"
-								style={{
-									strokeDasharray: dashArray,
-									strokeDashoffset: dashOffset,
-								}}
-								transform={`rotate(-90 ${410 / 2} ${410 / 2})`}
-							/>
-						</svg>
-					</div>
-					<div
-						className={`${sans.className} flex flex-col h-full w-full items-center justify-center text-lightPeriwinkle`}
-					>
-						<p className="tracking-[-5px] text-[80px] md:text-[100px] font-bold">
-							{formatTime(timer)}
-						</p>
-						<p className="tracking-[15px] text-[14px] md:text-[16px] uppercase font-bold">
-							{timerState}
-						</p>
-					</div>
-				</div>
-			</div>
-		</div>
-	);
-};
 
 const ArrowUpComponent = ({ opacity }: { opacity: number }) => {
 	return (
@@ -486,10 +455,10 @@ const InputComponent = ({
 						setMinutes(Number(e.target.value));
 					}}
 					onBlur={() => {
-						if (minutes < 15) {
-							setMinutes(15);
-						} else if (minutes > 25) {
-							setMinutes(25);
+						if (minutes < min) {
+							setMinutes(min);
+						} else if (minutes > max) {
+							setMinutes(max);
 						}
 					}}
 					className="appearance-none w-[140px] h-[40px] border rounded-[10px] py-2 px-3 bg-lavenderMist text-spaceCadet text-[14px] font-bold leading-tight focus:outline-none focus:shadow-outline"
@@ -497,10 +466,10 @@ const InputComponent = ({
 				<div className="flex flex-col absolute gap-2 right-0 mx-4 cursor-pointer">
 					<button
 						className={cn({
-							disabled: minutes === 25,
+							disabled: minutes === max,
 						})}
 						onClick={() => {
-							if (minutes < 25) {
+							if (minutes < max) {
 								setMinutes(minutes + 1);
 							}
 						}}
@@ -509,10 +478,10 @@ const InputComponent = ({
 					</button>
 					<button
 						className={cn({
-							disabled: minutes === 25,
+							disabled: minutes === max,
 						})}
 						onClick={() => {
-							if (minutes > 15) {
+							if (minutes > min) {
 								setMinutes(minutes - 1);
 							}
 						}}
@@ -530,28 +499,34 @@ const SettingsModal = ({
 	setIsOpen,
 	settings,
 	setSettings,
+	resetPomodoroTimer,
+	resetShortBreakTimer,
+	resetLongBreakTimer,
+	color,
 }: SettingsModalProps) => {
 	const [pomodoro, setPomodoro] = useState<number>(settings.pomodoro);
 	const [shortBreak, setShortBreak] = useState<number>(settings.shortBreak);
 	const [longBreak, setLongBreak] = useState<number>(settings.longBreak);
 	const [fontButton, setFontButton] = useState<Font>(settings.font);
-	const [color, setColor] = useState<Color>(settings.color);
+	const [colorButton, setColor] = useState<Color>(settings.color);
 
 	const hoverStyle = `hover:border-2 hover:border-white hover:outline hover:outline-1 hover:outline-lavenderMist`;
 	const fontListStyle = `w-[40px] h-[40px] bg-lavenderMist rounded-full text-spaceCadet text-[15px] flex items-center justify-center cursor-pointer`;
 	const colorListStyle = `w-[40px] h-[40px] rounded-full text-spaceCadet text-[15px] flex items-center justify-center cursor-pointer`;
 
 	const SaveSettings = () => {
+		resetLongBreakTimer();
+		resetPomodoroTimer();
+		resetShortBreakTimer();
 		setSettings({
 			pomodoro,
 			shortBreak,
 			longBreak,
 			font: fontButton,
-			color,
+			color: colorButton,
 		});
 		setIsOpen(false);
 	};
-
 	return (
 		<div
 			className={cn(
@@ -569,9 +544,7 @@ const SettingsModal = ({
 			></div>
 			<div className="w-[327px] bg-white rounded-[15px] z-[999]">
 				<div className="flex justify-between items-center p-6 z-[999]">
-					<h2 className={cn("font-bold text-[20px]", `${sans.className}`)}>
-						Settings
-					</h2>
+					<h2 className={cn("font-bold text-[20px]")}>Settings</h2>
 					<div
 						className="cursor-pointer"
 						onClick={() => {
@@ -662,28 +635,24 @@ const SettingsModal = ({
 						</h3>
 						<ul className="flex items-center justify-center gap-4">
 							<li
-								className={cn(
-									` bg-lightCoral ${colorListStyle} ${sans.className} ${hoverStyle}`
-								)}
+								className={cn(` bg-lightCoral ${colorListStyle} ${hoverStyle}`)}
 								onClick={() => setColor(Color.lightCoral)}
 							>
-								{color === Color.lightCoral ? <CheckComponent /> : null}
+								{colorButton === Color.lightCoral ? <CheckComponent /> : null}
 							</li>
 							<li
 								className={cn(
-									` bg-electricBlue ${colorListStyle} ${slab.className} ${hoverStyle}`
+									` bg-electricBlue ${colorListStyle} ${hoverStyle}`
 								)}
 								onClick={() => setColor(Color.electricBlue)}
 							>
-								{color === Color.electricBlue ? <CheckComponent /> : null}
+								{colorButton === Color.electricBlue ? <CheckComponent /> : null}
 							</li>
 							<li
-								className={cn(
-									` bg-lavender ${colorListStyle} ${mono.className} ${hoverStyle}`
-								)}
+								className={cn(` bg-lavender ${colorListStyle} ${hoverStyle}`)}
 								onClick={() => setColor(Color.lavender)}
 							>
-								{color === Color.lavender ? <CheckComponent /> : null}
+								{colorButton === Color.lavender ? <CheckComponent /> : null}
 							</li>
 						</ul>
 					</div>
@@ -691,7 +660,9 @@ const SettingsModal = ({
 				<div className="relative w-full">
 					<div className="absolute bottom-0 left-1/2 translate-x-[-50%] translate-y-[50%]">
 						<button
-							className="w-[140px] h-[53px] bg-lightCoral rounded-full text-[16px] text-white font-bold cursor-pointer relative"
+							className={`w-[140px] h-[53px] ${
+								"bg-" + color
+							} rounded-full text-[16px] text-white font-bold cursor-pointer relative`}
 							onClick={() => {
 								SaveSettings();
 							}}
@@ -699,6 +670,87 @@ const SettingsModal = ({
 							Apply
 							<span className="absolute inset-0 bg-white opacity-0 hover:opacity-20 transition-opacity duration-300 rounded-full"></span>
 						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	);
+};
+
+const TimerTab = ({
+	manageTimer,
+	formatTime,
+	timer,
+	timerState,
+	isVisible,
+	radius,
+	dashArray,
+	dashOffset,
+	color,
+}: {
+	manageTimer: (timerState: TimerState) => void;
+	formatTime: (time: number) => string;
+	timer: number;
+	timerState: TimerState;
+	isVisible: boolean;
+	radius: number;
+	dashArray: number;
+	dashOffset: number;
+	color: string;
+}) => {
+	return (
+		<div
+			className="flex items-center justify-center w-full h-full cursor-pointer"
+			onClick={() => manageTimer(timerState)}
+		>
+			<div
+				className="flex items-center justify-center relative aspect-square w-[300px] md:w-[410px] rounded-full bg-gradient-to-tl from-[#2e325a] to-[#0e112a]"
+				style={{
+					boxShadow:
+						"-50px -50px 100px 0px #272C5A, 50px 50px 100px 0px #121530",
+				}}
+			>
+				<div className="aspect-square w-full bg-gunmetal rounded-full m-4 ">
+					<div className="absolute inset-0 flex items-center justify-center">
+						<svg
+							width={410}
+							height={410}
+							viewBox="0 0 410 410"
+							className={cn({
+								"opacity-0": !isVisible,
+								"opacity-100": isVisible,
+							})}
+						>
+							<circle
+								cx={410 / 2}
+								cy={410 / 2}
+								strokeWidth="10px"
+								r={radius}
+								className="cb stroke-gunmetal"
+							/>
+							<circle
+								cx={410 / 2}
+								cy={410 / 2}
+								strokeWidth="10px"
+								r={radius}
+								className={`cp ${"stroke-" + color}`}
+								style={{
+									strokeDasharray: dashArray,
+									strokeDashoffset: dashOffset,
+								}}
+								transform={`rotate(-90 ${410 / 2} ${410 / 2})`}
+							/>
+						</svg>
+					</div>
+					<div
+						className={`flex flex-col h-full w-full items-center justify-center text-lightPeriwinkle`}
+					>
+						<p className="tracking-[-5px] text-[80px] md:text-[100px] font-bold">
+							{formatTime(timer)}
+						</p>
+						<p className="tracking-[15px] text-[14px] md:text-[16px] uppercase font-bold">
+							{timerState}
+						</p>
 					</div>
 				</div>
 			</div>
