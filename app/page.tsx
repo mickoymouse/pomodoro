@@ -9,15 +9,26 @@ import useTimer from "@/hooks/timer";
 import { cn } from "@/lib/utils";
 import SettingsIcon from "@/public/icon-settings.svg";
 import CloseIcon from "@/public/icon-close.svg";
+import { Font } from "@/enum/font";
+import { Color } from "@/enum/color";
 
 const sans = Kumbh_Sans({ subsets: ["latin"] });
 const slab = Roboto_Slab({ subsets: ["latin"] });
 const mono = Space_Mono({ weight: ["400", "700"], subsets: ["latin"] });
 
-enum PomodoroState {
-	RUNNING = "Pause",
-	PAUSED = "Start",
-	FINISHED = "Restart",
+interface Settings {
+	pomodoro: number;
+	shortBreak: number;
+	longBreak: number;
+	font: Font;
+	color: Color;
+}
+
+interface SettingsModalProps {
+	isOpen: boolean;
+	setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+	settings: Settings;
+	setSettings: React.Dispatch<React.SetStateAction<Settings>>;
 }
 
 export default function Home() {
@@ -159,6 +170,14 @@ export default function Home() {
 
 	const [settingsIsOpen, setSettingsIsOpen] = useState(false);
 
+	const [settinngs, setSettings] = useState<Settings>({
+		pomodoro: 15,
+		shortBreak: 3,
+		longBreak: 5,
+		font: Font.sans,
+		color: Color.lightCoral,
+	});
+
 	return (
 		<main className="flex min-h-screen flex-col items-center justify-center bg-spaceCadet">
 			<div className="container w-full flex flex-col gap-20 items-center">
@@ -292,7 +311,12 @@ export default function Home() {
 					<SettingsIcon />
 				</div>
 			</div>
-			<SettingsModal isOpen={settingsIsOpen} setIsOpen={setSettingsIsOpen} />
+			<SettingsModal
+				isOpen={settingsIsOpen}
+				setIsOpen={setSettingsIsOpen}
+				settings={settinngs}
+				setSettings={setSettings}
+			/>
 		</main>
 	);
 }
@@ -376,8 +400,7 @@ const TimerTab = ({
 	);
 };
 
-const ArrowUpComponent = () => {
-	const [opacity, setOpacity] = useState(0.25);
+const ArrowUpComponent = ({ opacity }: { opacity: number }) => {
 	return (
 		<svg xmlns="http://www.w3.org/2000/svg" width="14" height="7">
 			<path
@@ -386,15 +409,12 @@ const ArrowUpComponent = () => {
 				strokeOpacity={opacity}
 				strokeWidth="2"
 				d="M1 6l6-4 6 4"
-				onMouseEnter={() => setOpacity(1)}
-				onMouseLeave={() => setOpacity(0.25)}
 			/>
 		</svg>
 	);
 };
 
-const ArrowDownComponent = () => {
-	const [opacity, setOpacity] = useState(0.25);
+const ArrowDownComponent = ({ opacity }: { opacity: number }) => {
 	return (
 		<svg xmlns="http://www.w3.org/2000/svg" width="14" height="7">
 			<path
@@ -403,8 +423,6 @@ const ArrowDownComponent = () => {
 				strokeOpacity={opacity}
 				strokeWidth="2"
 				d="M1 1l6 4 6-4"
-				onMouseEnter={() => setOpacity(1)}
-				onMouseLeave={() => setOpacity(0.25)}
 			/>
 		</svg>
 	);
@@ -422,7 +440,7 @@ const CheckComponent = () => {
 			<path
 				d="M1 5.5L4.95263 9.45263L13.4053 1"
 				stroke="#161932"
-				stroke-width="2"
+				strokeWidth="2"
 			/>
 		</svg>
 	);
@@ -434,21 +452,29 @@ const InputComponent = ({
 	label,
 	min,
 	max,
+	minutes,
+	setMinutes,
 }: {
 	m: number;
 	id: string;
 	label: string;
 	min: number;
 	max: number;
+	minutes: number;
+	setMinutes: React.Dispatch<React.SetStateAction<number>>;
 }) => {
-	const [minutes, setMinutes] = useState(m);
+	const [opacity, setOpacity] = useState(0.25);
 
 	return (
 		<div className="flex items-center w-full justify-between">
 			<label className="text-[12px] font-bold text-spaceCadet" htmlFor={id}>
 				{label}
 			</label>
-			<div className="flex items-center relative">
+			<div
+				className="flex items-center relative cursor-pointer"
+				onMouseEnter={() => setOpacity(1)}
+				onMouseLeave={() => setOpacity(0.25)}
+			>
 				<input
 					type="number"
 					name={id}
@@ -468,9 +494,9 @@ const InputComponent = ({
 					}}
 					className="appearance-none w-[140px] h-[40px] border rounded-[10px] py-2 px-3 bg-lavenderMist text-spaceCadet text-[14px] font-bold leading-tight focus:outline-none focus:shadow-outline"
 				/>
-				<div className="flex flex-col gap-2 absolute right-0 mx-4">
-					<div
-						className={cn("cursor-pointer", {
+				<div className="flex flex-col absolute gap-2 right-0 mx-4 cursor-pointer">
+					<button
+						className={cn({
 							disabled: minutes === 25,
 						})}
 						onClick={() => {
@@ -479,10 +505,10 @@ const InputComponent = ({
 							}
 						}}
 					>
-						<ArrowUpComponent />
-					</div>
-					<div
-						className={cn("cursor-pointer", {
+						<ArrowUpComponent opacity={opacity} />
+					</button>
+					<button
+						className={cn({
 							disabled: minutes === 25,
 						})}
 						onClick={() => {
@@ -491,8 +517,8 @@ const InputComponent = ({
 							}
 						}}
 					>
-						<ArrowDownComponent />
-					</div>
+						<ArrowDownComponent opacity={opacity} />
+					</button>
 				</div>
 			</div>
 		</div>
@@ -502,21 +528,29 @@ const InputComponent = ({
 const SettingsModal = ({
 	isOpen,
 	setIsOpen,
-}: {
-	isOpen: boolean;
-	setIsOpen: (isOpen: boolean) => void;
-}) => {
-	const [fontButton, setFontButton] = useState<"sans" | "slab" | "mono">(
-		"sans"
-	);
-
-	const [color, setColor] = useState<
-		"lightCoral" | "electricBlue" | "lavender"
-	>("lightCoral");
+	settings,
+	setSettings,
+}: SettingsModalProps) => {
+	const [pomodoro, setPomodoro] = useState<number>(settings.pomodoro);
+	const [shortBreak, setShortBreak] = useState<number>(settings.shortBreak);
+	const [longBreak, setLongBreak] = useState<number>(settings.longBreak);
+	const [fontButton, setFontButton] = useState<Font>(settings.font);
+	const [color, setColor] = useState<Color>(settings.color);
 
 	const hoverStyle = `hover:border-2 hover:border-white hover:outline hover:outline-1 hover:outline-lavenderMist`;
 	const fontListStyle = `w-[40px] h-[40px] bg-lavenderMist rounded-full text-spaceCadet text-[15px] flex items-center justify-center cursor-pointer`;
 	const colorListStyle = `w-[40px] h-[40px] rounded-full text-spaceCadet text-[15px] flex items-center justify-center cursor-pointer`;
+
+	const SaveSettings = () => {
+		setSettings({
+			pomodoro,
+			shortBreak,
+			longBreak,
+			font: fontButton,
+			color,
+		});
+		setIsOpen(false);
+	};
 
 	return (
 		<div
@@ -526,13 +560,15 @@ const SettingsModal = ({
 					hidden: !isOpen,
 				}
 			)}
-			onClick={() => {
-				setIsOpen(false);
-			}}
 		>
-			<div className="min-h-screen min-w-full inset-0 z-40 fixed bg-gray-400 opacity-30 "></div>
-			<div className="w-[327px] h-[549px] bg-white rounded-[15px] z-50">
-				<div className="flex justify-between items-center p-6 z-50">
+			<div
+				className="min-h-screen min-w-full inset-0 z-40 fixed bg-gray-400 opacity-30 "
+				onClick={() => {
+					setIsOpen(false);
+				}}
+			></div>
+			<div className="w-[327px] bg-white rounded-[15px] z-[999]">
+				<div className="flex justify-between items-center p-6 z-[999]">
 					<h2 className={cn("font-bold text-[20px]", `${sans.className}`)}>
 						Settings
 					</h2>
@@ -546,7 +582,7 @@ const SettingsModal = ({
 					</div>
 				</div>
 				<hr />
-				<div className="my-6 flex flex-col px-4 gap-4">
+				<div className="my-6 flex flex-col px-4 gap-4 mb-14">
 					<div className="flex flex-col gap-6">
 						<h3 className="text-center text-[11px] font-bold tracking-[4.23px] uppercase">
 							time (minutes)
@@ -558,6 +594,8 @@ const SettingsModal = ({
 								label="pomodoro"
 								min={15}
 								max={25}
+								minutes={pomodoro}
+								setMinutes={setPomodoro}
 							/>
 							<InputComponent
 								m={3}
@@ -565,6 +603,8 @@ const SettingsModal = ({
 								label="short break"
 								min={3}
 								max={5}
+								minutes={shortBreak}
+								setMinutes={setShortBreak}
 							/>
 							<InputComponent
 								m={5}
@@ -572,6 +612,8 @@ const SettingsModal = ({
 								label="long break"
 								min={5}
 								max={15}
+								minutes={longBreak}
+								setMinutes={setLongBreak}
 							/>
 						</div>
 					</div>
@@ -585,34 +627,31 @@ const SettingsModal = ({
 								className={cn(
 									`${fontListStyle} ${sans.className} ${hoverStyle}`,
 									{
-										"bg-gunmetal text-white": fontButton === "sans",
+										"bg-gunmetal text-white": fontButton === Font.sans,
 									}
 								)}
-								onClick={() => setFontButton("sans")}
 							>
-								Aa
+								<button onClick={() => setFontButton(Font.sans)}>Aa</button>
 							</li>
 							<li
 								className={cn(
 									`${fontListStyle} ${slab.className} ${hoverStyle}`,
 									{
-										"bg-gunmetal text-white": fontButton === "slab",
+										"bg-gunmetal text-white": fontButton === Font.slab,
 									}
 								)}
-								onClick={() => setFontButton("slab")}
 							>
-								Aa
+								<button onClick={() => setFontButton(Font.slab)}>Aa</button>
 							</li>
 							<li
 								className={cn(
 									`${fontListStyle} ${mono.className} ${hoverStyle}`,
 									{
-										"bg-gunmetal text-white": fontButton === "mono",
+										"bg-gunmetal text-white": fontButton === Font.mono,
 									}
 								)}
-								onClick={() => setFontButton("mono")}
 							>
-								Aa
+								<button onClick={() => setFontButton(Font.mono)}>Aa</button>
 							</li>
 						</ul>
 					</div>
@@ -626,27 +665,40 @@ const SettingsModal = ({
 								className={cn(
 									` bg-lightCoral ${colorListStyle} ${sans.className} ${hoverStyle}`
 								)}
-								onClick={() => setColor("lightCoral")}
+								onClick={() => setColor(Color.lightCoral)}
 							>
-								{color === "lightCoral" ? <CheckComponent /> : null}
+								{color === Color.lightCoral ? <CheckComponent /> : null}
 							</li>
 							<li
 								className={cn(
 									` bg-electricBlue ${colorListStyle} ${slab.className} ${hoverStyle}`
 								)}
-								onClick={() => setColor("electricBlue")}
+								onClick={() => setColor(Color.electricBlue)}
 							>
-								{color === "electricBlue" ? <CheckComponent /> : null}
+								{color === Color.electricBlue ? <CheckComponent /> : null}
 							</li>
 							<li
 								className={cn(
 									` bg-lavender ${colorListStyle} ${mono.className} ${hoverStyle}`
 								)}
-								onClick={() => setColor("lavender")}
+								onClick={() => setColor(Color.lavender)}
 							>
-								{color === "lavender" ? <CheckComponent /> : null}
+								{color === Color.lavender ? <CheckComponent /> : null}
 							</li>
 						</ul>
+					</div>
+				</div>
+				<div className="relative w-full">
+					<div className="absolute bottom-0 left-1/2 translate-x-[-50%] translate-y-[50%]">
+						<button
+							className="w-[140px] h-[53px] bg-lightCoral rounded-full text-[16px] text-white font-bold cursor-pointer relative"
+							onClick={() => {
+								SaveSettings();
+							}}
+						>
+							Apply
+							<span className="absolute inset-0 bg-white opacity-0 hover:opacity-20 transition-opacity duration-300 rounded-full"></span>
+						</button>
 					</div>
 				</div>
 			</div>
