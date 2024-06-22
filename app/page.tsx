@@ -1,11 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
 import { Kumbh_Sans } from "next/font/google";
 
 import SettingsIcon from "@/public/icon-settings.svg";
 import { cn } from "@/lib/utils";
+import useTimer from "@/hooks/timer";
+import { TimerState } from "@/enum/timer";
+import { useEffect, useState } from "react";
 
 const sans = Kumbh_Sans({ subsets: ["latin"] });
 
@@ -16,54 +18,31 @@ enum PomodoroState {
 }
 
 export default function Home() {
-	const radius = 169.5;
-	const dashArray = radius * 2 * Math.PI;
+	// const radius = 169.5;
+	// const dashArray = radius * 2 * Math.PI;
+
+	const [radius, setRadius] = useState(169.5);
+	const [dashArray, setDashArray] = useState(radius * 2 * Math.PI);
+	const [pomodoroDuration, setPomodoroDuration] = useState(1);
+
+	useEffect(() => {
+		setDashArray(radius * 2 * Math.PI);
+	}, [radius]);
 
 	// Pomodoro Timer
-	const [pomodoroTimer, setPomodoroTimer] = useState(1 * 60);
-	const [initialPomodoroTimer, setInitialPomodoroTimer] = useState(1 * 60);
-	const [pomodoroProgress, setPomodoroProgress] = useState(0);
-	const [pomodoroDashOffset, setPomodoroDashOffset] = useState(0);
-	const [pomodoroIsRunning, setPomodoroIsRunning] = useState(false);
-	const [pomodoroIsVisible, setPomodoroIsVisible] = useState(false);
-	const [pomodoroState, setPomodoroState] = useState<PomodoroState>(
-		PomodoroState.PAUSED
-	);
-
-	let interval: NodeJS.Timeout;
-	useEffect(() => {
-		if (!pomodoroIsRunning) {
-			return;
-		}
-
-		interval = setInterval(() => {
-			setPomodoroTimer((prevState) => {
-				if (prevState <= 0) {
-					setPomodoroState(PomodoroState.FINISHED);
-					setPomodoroProgress(0);
-					setPomodoroIsRunning(false);
-					clearInterval(interval);
-					return 0;
-				}
-				return prevState - 1;
-			});
-		}, 1000);
-
-		return () => clearInterval(interval);
-	}, [pomodoroIsRunning]);
-
-	useEffect(() => {
-		setPomodoroProgress(
-			((initialPomodoroTimer - pomodoroTimer) / initialPomodoroTimer) * 100
-		);
-	}, [pomodoroTimer]);
-
-	useEffect(() => {
-		setPomodoroDashOffset(dashArray - (dashArray * pomodoroProgress) / 100);
-		setPomodoroIsVisible(true);
-	}, [pomodoroProgress]);
+	const {
+		timer: pomodoroTimer,
+		isVisible: pomodoroIsVisible,
+		initialTimer: pomodoroInitialTimer,
+		timerState: pomodoroState,
+		dashOffset: pomodoroDashOffset,
+		setIsRunning: setPomodoroIsRunning,
+		setTimerState: setPomodoroState,
+		setTimer: setPomodoroTimer,
+	} = useTimer(dashArray, pomodoroDuration);
 
 	const formatTime = (time: number) => {
+		console.log(pomodoroDuration);
 		const minutes = Math.floor(time / 60);
 		const seconds = time % 60;
 		return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
@@ -72,21 +51,20 @@ export default function Home() {
 		)}`;
 	};
 
-	const managePomodoroTimer = (state: PomodoroState) => {
-		switch (pomodoroState) {
-			case PomodoroState.RUNNING:
+	const managePomodoroTimer = (state: TimerState) => {
+		switch (state) {
+			case TimerState.RUNNING:
 				setPomodoroIsRunning(false);
-				setPomodoroState(PomodoroState.PAUSED);
+				setPomodoroState(TimerState.PAUSED);
 				break;
-			case PomodoroState.PAUSED:
+			case TimerState.PAUSED:
 				setPomodoroIsRunning(true);
-				setPomodoroState(PomodoroState.RUNNING);
+				setPomodoroState(TimerState.RUNNING);
 				break;
-			case PomodoroState.FINISHED:
-				clearInterval(interval);
-				setPomodoroTimer(initialPomodoroTimer);
+			case TimerState.FINISHED:
+				setPomodoroTimer(pomodoroInitialTimer);
 				setPomodoroIsRunning(true);
-				setPomodoroState(PomodoroState.RUNNING);
+				setPomodoroState(TimerState.RUNNING);
 				break;
 		}
 	};
@@ -160,7 +138,12 @@ export default function Home() {
 						</div>
 					</div>
 				</div>
-				<div className="flex items-center justify-center cursor-pointer">
+				<div
+					className="flex items-center justify-center cursor-pointer"
+					onClick={() => {
+						setPomodoroDuration(25);
+					}}
+				>
 					<SettingsIcon />
 				</div>
 			</div>
