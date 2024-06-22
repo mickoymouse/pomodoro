@@ -32,17 +32,6 @@ export default function Home() {
 
 	let interval: NodeJS.Timeout;
 	useEffect(() => {
-		console.log("pomodoroIsRunning", pomodoroIsRunning);
-		console.log("pomodoroState", pomodoroState);
-		console.log("pomodoroTimer", pomodoroTimer);
-		console.log("initialPomodoroTimer", initialPomodoroTimer);
-		console.log("pomodoroProgress", pomodoroProgress);
-		console.log("pomodoroDashOffset", pomodoroDashOffset);
-		console.log("pomodoroIsVisible", pomodoroIsVisible);
-		console.log("dashArray", dashArray);
-		console.log("radius", radius);
-		console.log("interval", interval);
-
 		if (!pomodoroIsRunning) {
 			return;
 		}
