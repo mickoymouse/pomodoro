@@ -18,12 +18,8 @@ enum PomodoroState {
 }
 
 export default function Home() {
-	const [radius, setRadius] = useState(169.5);
-	const [dashArray, setDashArray] = useState(radius * 2 * Math.PI);
-
-	useEffect(() => {
-		setDashArray(radius * 2 * Math.PI);
-	}, [radius]);
+	const radius = 169.5;
+	const dashArray = radius * 2 * Math.PI;
 
 	const [tab, setTab] = useState(0);
 

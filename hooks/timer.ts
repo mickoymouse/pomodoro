@@ -32,7 +32,6 @@ const useTimer = (dashArray: number, duration: number) => {
 			setTimer((prevState) => {
 				if (prevState <= 0) {
 					setTimerState(TimerState.FINISHED);
-					setProgress(0);
 					setIsRunning(false);
 					clearInterval(interval);
 					return 0;
@@ -51,7 +50,7 @@ const useTimer = (dashArray: number, duration: number) => {
 	useEffect(() => {
 		setDashOffset(dashArray - (dashArray * progress) / 100);
 		setIsVisible(true);
-	}, [progress, dashArray, duration]);
+	}, [progress, duration]);
 
 	return {
 		timer,
