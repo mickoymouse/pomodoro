@@ -11,16 +11,18 @@ export default function Home() {
 
 	return (
 		<main className="flex min-h-screen flex-col items-center justify-center bg-spaceCadet">
-			<div className="container w-full flex flex-col gap-8">
+			<div className="container w-full flex flex-col gap-20 items-center">
 				<div className="w-full flex items-center justify-center">
 					<Image src="logo.svg" width={157} height={40} alt="pomodoro logo" />
 				</div>
-				<ol className="flex justify-center gap-6">
-					<li>pomodoro</li>
-					<li>short break</li>
-					<li>long break</li>
+				<ol className="flex justify-center items-center p-3 bg-gunmetal rounded-full text-lightPeriwinkle font-bold text-[14px]">
+					<li className="bg-lightCoral px-6 py-4 rounded-full text-spaceCadet cursor-pointer">
+						pomodoro
+					</li>
+					<li className="px-6 py-4 rounded-full cursor-pointer">short break</li>
+					<li className="px-6 py-4 rounded-full cursor-pointer">long break</li>
 				</ol>
-				<div className="flex items-center justify-center w-full h-full">
+				<div className="flex items-center justify-center w-full h-full cursor-pointer">
 					<div
 						className="flex items-center justify-center relative aspect-square w-[300px] md:w-[410px] rounded-full bg-gradient-to-tl from-[#2e325a] to-[#0e112a]"
 						style={{
@@ -28,7 +30,7 @@ export default function Home() {
 								"-50px -50px 100px 0px #272C5A, 50px 50px 100px 0px #121530",
 						}}
 					>
-						<div className="aspect-square w-full bg-gunmetal rounded-full m-4">
+						<div className="aspect-square w-full bg-gunmetal rounded-full m-4 ">
 							<div className="absolute inset-0 flex items-center justify-center">
 								<svg width={410} height={410} viewBox="0 0 410 410">
 									<circle
@@ -63,7 +65,7 @@ export default function Home() {
 						</div>
 					</div>
 				</div>
-				<div className="flex items-center justify-center">
+				<div className="flex items-center justify-center cursor-pointer">
 					<SettingsIcon />
 				</div>
 			</div>
