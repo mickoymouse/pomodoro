@@ -63,3 +63,9 @@ h6 {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

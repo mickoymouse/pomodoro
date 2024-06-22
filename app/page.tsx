@@ -1,15 +1,18 @@
 "use client";
 
+import { Kumbh_Sans, Roboto_Slab, Space_Mono } from "next/font/google";
 import Image from "next/image";
-import { Kumbh_Sans } from "next/font/google";
+import { useState } from "react";
 
-import SettingsIcon from "@/public/icon-settings.svg";
-import { cn } from "@/lib/utils";
-import useTimer from "@/hooks/timer";
 import { TimerState } from "@/enum/timer";
-import { useEffect, useState } from "react";
+import useTimer from "@/hooks/timer";
+import { cn } from "@/lib/utils";
+import SettingsIcon from "@/public/icon-settings.svg";
+import CloseIcon from "@/public/icon-close.svg";
 
 const sans = Kumbh_Sans({ subsets: ["latin"] });
+const slab = Roboto_Slab({ subsets: ["latin"] });
+const mono = Space_Mono({ weight: ["400", "700"], subsets: ["latin"] });
 
 enum PomodoroState {
 	RUNNING = "Pause",
@@ -154,6 +157,8 @@ export default function Home() {
 		}
 	};
 
+	const [settingsIsOpen, setSettingsIsOpen] = useState(false);
+
 	return (
 		<main className="flex min-h-screen flex-col items-center justify-center bg-spaceCadet">
 			<div className="container w-full flex flex-col gap-20 items-center">
@@ -278,10 +283,16 @@ export default function Home() {
 						dashOffset={longBreakDashOffset}
 					/>
 				</div>
-				<div className="flex items-center justify-center cursor-pointer">
+				<div
+					className="flex items-center justify-center cursor-pointer"
+					onClick={() => {
+						setSettingsIsOpen(true);
+					}}
+				>
 					<SettingsIcon />
 				</div>
 			</div>
+			<SettingsModal isOpen={settingsIsOpen} setIsOpen={setSettingsIsOpen} />
 		</main>
 	);
 }
@@ -350,7 +361,7 @@ const TimerTab = ({
 						</svg>
 					</div>
 					<div
-						className={`${sans.className} flex flex-col h-full w-full items-center justify-center z-50 text-lightPeriwinkle`}
+						className={`${sans.className} flex flex-col h-full w-full items-center justify-center text-lightPeriwinkle`}
 					>
 						<p className="tracking-[-5px] text-[80px] md:text-[100px] font-bold">
 							{formatTime(timer)}
@@ -358,6 +369,284 @@ const TimerTab = ({
 						<p className="tracking-[15px] text-[14px] md:text-[16px] uppercase font-bold">
 							{timerState}
 						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	);
+};
+
+const ArrowUpComponent = () => {
+	const [opacity, setOpacity] = useState(0.25);
+	return (
+		<svg xmlns="http://www.w3.org/2000/svg" width="14" height="7">
+			<path
+				fill="none"
+				stroke="#1E213F"
+				strokeOpacity={opacity}
+				strokeWidth="2"
+				d="M1 6l6-4 6 4"
+				onMouseEnter={() => setOpacity(1)}
+				onMouseLeave={() => setOpacity(0.25)}
+			/>
+		</svg>
+	);
+};
+
+const ArrowDownComponent = () => {
+	const [opacity, setOpacity] = useState(0.25);
+	return (
+		<svg xmlns="http://www.w3.org/2000/svg" width="14" height="7">
+			<path
+				fill="none"
+				stroke="#1E213F"
+				strokeOpacity={opacity}
+				strokeWidth="2"
+				d="M1 1l6 4 6-4"
+				onMouseEnter={() => setOpacity(1)}
+				onMouseLeave={() => setOpacity(0.25)}
+			/>
+		</svg>
+	);
+};
+
+const CheckComponent = () => {
+	return (
+		<svg
+			width="15"
+			height="11"
+			viewBox="0 0 15 11"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+		>
+			<path
+				d="M1 5.5L4.95263 9.45263L13.4053 1"
+				stroke="#161932"
+				stroke-width="2"
+			/>
+		</svg>
+	);
+};
+
+const InputComponent = ({
+	m,
+	id,
+	label,
+	min,
+	max,
+}: {
+	m: number;
+	id: string;
+	label: string;
+	min: number;
+	max: number;
+}) => {
+	const [minutes, setMinutes] = useState(m);
+
+	return (
+		<div className="flex items-center w-full justify-between">
+			<label className="text-[12px] font-bold text-spaceCadet" htmlFor={id}>
+				{label}
+			</label>
+			<div className="flex items-center relative">
+				<input
+					type="number"
+					name={id}
+					id={id}
+					min={min}
+					max={max}
+					value={minutes}
+					onChange={(e) => {
+						setMinutes(Number(e.target.value));
+					}}
+					onBlur={() => {
+						if (minutes < 15) {
+							setMinutes(15);
+						} else if (minutes > 25) {
+							setMinutes(25);
+						}
+					}}
+					className="appearance-none w-[140px] h-[40px] border rounded-[10px] py-2 px-3 bg-lavenderMist text-spaceCadet text-[14px] font-bold leading-tight focus:outline-none focus:shadow-outline"
+				/>
+				<div className="flex flex-col gap-2 absolute right-0 mx-4">
+					<div
+						className={cn("cursor-pointer", {
+							disabled: minutes === 25,
+						})}
+						onClick={() => {
+							if (minutes < 25) {
+								setMinutes(minutes + 1);
+							}
+						}}
+					>
+						<ArrowUpComponent />
+					</div>
+					<div
+						className={cn("cursor-pointer", {
+							disabled: minutes === 25,
+						})}
+						onClick={() => {
+							if (minutes > 15) {
+								setMinutes(minutes - 1);
+							}
+						}}
+					>
+						<ArrowDownComponent />
+					</div>
+				</div>
+			</div>
+		</div>
+	);
+};
+
+const SettingsModal = ({
+	isOpen,
+	setIsOpen,
+}: {
+	isOpen: boolean;
+	setIsOpen: (isOpen: boolean) => void;
+}) => {
+	const [fontButton, setFontButton] = useState<"sans" | "slab" | "mono">(
+		"sans"
+	);
+
+	const [color, setColor] = useState<
+		"lightCoral" | "electricBlue" | "lavender"
+	>("lightCoral");
+
+	const hoverStyle = `hover:border-2 hover:border-white hover:outline hover:outline-1 hover:outline-lavenderMist`;
+	const fontListStyle = `w-[40px] h-[40px] bg-lavenderMist rounded-full text-spaceCadet text-[15px] flex items-center justify-center cursor-pointer`;
+	const colorListStyle = `w-[40px] h-[40px] rounded-full text-spaceCadet text-[15px] flex items-center justify-center cursor-pointer`;
+
+	return (
+		<div
+			className={cn(
+				"min-h-screen min-w-full inset-0 z-50 fixed flex items-center justify-center",
+				{
+					hidden: !isOpen,
+				}
+			)}
+			onClick={() => {
+				setIsOpen(false);
+			}}
+		>
+			<div className="min-h-screen min-w-full inset-0 z-40 fixed bg-gray-400 opacity-30 "></div>
+			<div className="w-[327px] h-[549px] bg-white rounded-[15px] z-50">
+				<div className="flex justify-between items-center p-6 z-50">
+					<h2 className={cn("font-bold text-[20px]", `${sans.className}`)}>
+						Settings
+					</h2>
+					<div
+						className="cursor-pointer"
+						onClick={() => {
+							setIsOpen(false);
+						}}
+					>
+						<CloseIcon />
+					</div>
+				</div>
+				<hr />
+				<div className="my-6 flex flex-col px-4 gap-4">
+					<div className="flex flex-col gap-6">
+						<h3 className="text-center text-[11px] font-bold tracking-[4.23px] uppercase">
+							time (minutes)
+						</h3>
+						<div className="flex flex-col gap-2">
+							<InputComponent
+								m={15}
+								id="pomodoro"
+								label="pomodoro"
+								min={15}
+								max={25}
+							/>
+							<InputComponent
+								m={3}
+								id="short-break"
+								label="short break"
+								min={3}
+								max={5}
+							/>
+							<InputComponent
+								m={5}
+								id="long-break"
+								label="long break"
+								min={5}
+								max={15}
+							/>
+						</div>
+					</div>
+					<hr />
+					<div className="flex flex-col items-center gap-4">
+						<h3 className="text-[11px] tracking-[4.23px] font-bold text-gunmetal uppercase">
+							font
+						</h3>
+						<ul className="flex items-center justify-center gap-4">
+							<li
+								className={cn(
+									`${fontListStyle} ${sans.className} ${hoverStyle}`,
+									{
+										"bg-gunmetal text-white": fontButton === "sans",
+									}
+								)}
+								onClick={() => setFontButton("sans")}
+							>
+								Aa
+							</li>
+							<li
+								className={cn(
+									`${fontListStyle} ${slab.className} ${hoverStyle}`,
+									{
+										"bg-gunmetal text-white": fontButton === "slab",
+									}
+								)}
+								onClick={() => setFontButton("slab")}
+							>
+								Aa
+							</li>
+							<li
+								className={cn(
+									`${fontListStyle} ${mono.className} ${hoverStyle}`,
+									{
+										"bg-gunmetal text-white": fontButton === "mono",
+									}
+								)}
+								onClick={() => setFontButton("mono")}
+							>
+								Aa
+							</li>
+						</ul>
+					</div>
+					<hr />
+					<div className="flex flex-col items-center gap-4">
+						<h3 className="text-[11px] tracking-[4.23px] font-bold text-gunmetal uppercase">
+							color
+						</h3>
+						<ul className="flex items-center justify-center gap-4">
+							<li
+								className={cn(
+									` bg-lightCoral ${colorListStyle} ${sans.className} ${hoverStyle}`
+								)}
+								onClick={() => setColor("lightCoral")}
+							>
+								{color === "lightCoral" ? <CheckComponent /> : null}
+							</li>
+							<li
+								className={cn(
+									` bg-electricBlue ${colorListStyle} ${slab.className} ${hoverStyle}`
+								)}
+								onClick={() => setColor("electricBlue")}
+							>
+								{color === "electricBlue" ? <CheckComponent /> : null}
+							</li>
+							<li
+								className={cn(
+									` bg-lavender ${colorListStyle} ${mono.className} ${hoverStyle}`
+								)}
+								onClick={() => setColor("lavender")}
+							>
+								{color === "lavender" ? <CheckComponent /> : null}
+							</li>
+						</ul>
 					</div>
 				</div>
 			</div>
