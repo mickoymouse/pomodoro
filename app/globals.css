@@ -54,44 +54,12 @@ h6 {
   }
 }
 
-.progress-bar {
-  --size: 132px;
-  --bar-width: 20px;
-
-  width: var(--size);
-  aspect-ratio: 1/1;
-
-  background: conic-gradient(
-    blue 69%,
-    white 0%
-  );
-  border-radius: 50%;
-
-  display: grid;
-  place-items: center;
-  position: relative;
-  overflow: hidden;
-
-  &::after {
-    content: '';
-    background: white;
-    border-radius: inherit;
-    width: calc(100% - var(--bar-width));
-    aspect-ratio: 1/1;
-    z-index: 1;
-
-    position: absolute;
-  }
-}
-
 .cb {
   fill: none;
-  stroke: #ddd;
 }
 
 .cp {
   fill: none;
-  stroke: red;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
