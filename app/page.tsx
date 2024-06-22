@@ -22,6 +22,20 @@ export default function Home() {
 	const dashArray = radius * 2 * Math.PI;
 
 	const [tab, setTab] = useState(0);
+	const [prevTab, setPrevTab] = useState(0);
+	const [animate, setAnimate] = useState("");
+
+	const handleTabChange = (tab: number) => {
+		if (prevTab === tab) {
+			return;
+		}
+
+		if (prevTab < tab) setAnimate("animate-slideInFromLeft");
+		else setAnimate("animate-slideInFromRight");
+
+		setTab(tab);
+		setPrevTab(tab);
+	};
 
 	// Pomodoro Timer
 	const [pomodoroDuration, setPomodoroDuration] = useState(25);
@@ -63,7 +77,6 @@ export default function Home() {
 	} = useTimer(dashArray, longBreakDuration);
 
 	const formatTime = (time: number) => {
-		console.log(pomodoroDuration);
 		const minutes = Math.floor(time / 60);
 		const seconds = time % 60;
 		return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
@@ -147,32 +160,76 @@ export default function Home() {
 				<div className="w-full flex items-center justify-center">
 					<Image src="logo.svg" width={157} height={40} alt="pomodoro logo" />
 				</div>
-				<ol className="flex justify-center items-center p-3 bg-gunmetal rounded-full text-lightPeriwinkle font-bold text-[14px]">
-					<li
-						className={cn("px-6 py-4 rounded-full cursor-pointer", {
-							"bg-lightCoral text-spaceCadet": tab === 0,
-						})}
-						onClick={() => setTab(0)}
-					>
-						pomodoro
-					</li>
-					<li
-						className={cn("px-6 py-4 rounded-full cursor-pointer", {
-							"bg-lightCoral text-spaceCadet": tab === 1,
-						})}
-						onClick={() => setTab(1)}
-					>
-						short break
-					</li>
-					<li
-						className={cn("px-6 py-4 rounded-full cursor-pointer", {
-							"bg-lightCoral text-spaceCadet": tab === 2,
-						})}
-						onClick={() => setTab(2)}
-					>
-						long break
-					</li>
-				</ol>
+				<nav>
+					<ul className="flex justify-between items-center p-2 bg-gunmetal rounded-full text-lightPeriwinkle font-bold text-[12px] md:text-[14px]">
+						<li className="relative">
+							<p
+								className={cn(
+									"z-10 relative p-4 md:p-6 text-[12px] md:text-[14px] cursor-pointer",
+									{
+										"text-spaceCadet": tab === 0,
+									}
+								)}
+								onClick={() => handleTabChange(0)}
+							>
+								pomodoro
+							</p>
+							<div
+								className={cn(
+									"h-full w-full absolute top-0 left-0 z-0 rounded-full",
+									{
+										"bg-lightCoral": tab === 0,
+										[animate]: tab === 0,
+									}
+								)}
+							></div>
+						</li>
+						<li className="relative">
+							<p
+								className={cn(
+									"z-10 relative p-4 md:p-6 text-[12px] md:text-[14px] cursor-pointer",
+									{
+										"text-spaceCadet": tab === 1,
+									}
+								)}
+								onClick={() => handleTabChange(1)}
+							>
+								short break
+							</p>
+							<div
+								className={cn(
+									"h-full w-full absolute top-0 left-0 z-0 rounded-full",
+									{
+										"bg-lightCoral": tab === 1,
+										[animate]: tab === 1,
+									}
+								)}
+							></div>
+						</li>
+						<li className="relative">
+							<p
+								className={cn(
+									"z-10 relative p-4 md:p-6 text-[12px] md:text-[14px] cursor-pointer",
+									{
+										"text-spaceCadet": tab === 2,
+									}
+								)}
+								onClick={() => handleTabChange(2)}
+							>
+								long break
+							</p>
+							<div
+								className={cn(
+									"h-full w-full absolute top-0 left-0 z-0 rounded-full",
+									{
+										"bg-lightCoral": tab === 2,
+										[animate]: tab === 2,
+									}
+								)}
+							></div>
+						</li>
+					</ul>
+				</nav>
 				<div
 					className={cn({
 						hidden: tab !== 0,
@@ -295,10 +352,10 @@ const TimerTab = ({
 					<div
 						className={`${sans.className} flex flex-col h-full w-full items-center justify-center z-50 text-lightPeriwinkle`}
 					>
-						<p className="tracking-[-5px] text-[100px] font-bold">
+						<p className="tracking-[-5px] text-[80px] md:text-[100px] font-bold">
 							{formatTime(timer)}
 						</p>
-						<p className="tracking-[15px] text-[16px] uppercase font-bold">
+						<p className="tracking-[15px] text-[14px] md:text-[16px] uppercase font-bold">
 							{timerState}
 						</p>
 					</div>

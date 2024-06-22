@@ -17,6 +17,20 @@ const config: Config = {
 				lavenderMist: "#eff1fa",
 				gunmetal: "#161932",
 			},
+			keyframes: {
+				slideInFromLeft: {
+					"0%": { transform: "translateX(-100%)" },
+					"100%": { transform: "translateX(0)" },
+				},
+				slideInFromRight: {
+					"0%": { transform: "translateX(100%)" },
+					"100%": { transform: "translateX(0)" },
+				},
+			},
+			animation: {
+				slideInFromLeft: "slideInFromLeft 0.5s forwards",
+				slideInFromRight: "slideInFromRight 0.5s forwards",
+			},
 		},
 	},
 	plugins: [],

@@ -1,5 +1,4 @@
 import { TimerState } from "@/enum/timer";
-import { clear } from "console";
 import { useEffect, useState } from "react";
 
 const useTimer = (dashArray: number, duration: number) => {
